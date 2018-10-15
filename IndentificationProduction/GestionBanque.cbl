@@ -79,6 +79,9 @@
        77 NbLigne pic 99.
        77 NbPage pic 99.
        77 div pic 9(15).
+      * Variables GestClient
+       77 NomClient PIC X(50) VALUE ALL SPACE.
+      *77 NomClientVide PIC X(50) VALUE ALL SPACE.
 
        77 ListeRubErrone-Status PIC 99.
        
@@ -438,16 +441,25 @@
            write EnrFichierRIB from EtatControlCleRIBLigneDetail.
        ImpressionPiedDePage.
        ImpressionEnTete.
-      *gestionClients.
-      *    perform gestionClients-ini.
-      *    perform gestionClients-trt.
-      *    perform gestionClients-fin.
-      *gestionClients-ini.
-      *gestionClients-trt.
-      *gestionClients-fin.
-      *    perform main-menu.
 
-       
+      **********************************
+      * Gestion des clients
+      **********************************
+      * Création client, consultation, modification compte, suppression compte
+       gestionClients.
+           perform gestionClients-ini.
+               MOVE '0' TO NomClient.
+           perform gestionClients-trt until NomClient = SPACE.
+           perform gestionClients-fin.
+
+       gestionClients-ini.
+
+       gestionClients-trt.
+      * Toujours préserver NomClient    
+           MOVE SPACE to NomClient.
+           ACCEPT NomClient.
+
+       gestionClients-fin.
 
        end program GestionBanque.
        
