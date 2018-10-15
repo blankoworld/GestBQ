@@ -83,6 +83,7 @@
        77 div pic 9(15).
       * Variables GestClient
        77 NomClient PIC X(50) VALUE ALL SPACE.
+       77 listeCompteClients-EOF PIC 9 VALUE 0.
 
        77 ListeRubErrone-Status PIC 99.
        
@@ -178,8 +179,9 @@
            10 line 8 col 71 VALUE "Credit"
                foreground-color is CouleurFond
                background-color is CouleurCaractere.
+      * Affichage d'un "trait" aux deux tiers de l'écran environ
+           10 line 20 col 1 PIC X(80) VALUE ALL "_".
 
-    
        procedure division.
        principal section.
        main-menu.
@@ -497,15 +499,19 @@
            MOVE SPACE to NomClient.
            ACCEPT NomClient line 5 col 20 SIZE 24.
            IF NomClient <> space then
-               PERFORM gestionClients-rechercheNom
+               PERFORM gestionClients-Affichage
            END-IF.
 
        gestionClients-fin.
            continue.
 
-       gestionClients-rechercheNom.
-      * recherche dans la base d'une correspondance => retour de 0 ou 1 si
-      * succès. On affiche alors les données sur l'entête de l'écran
+       gestionClients-Affichage.
+           perform gestionClients-Affichage-Init.
+           perform gestionClients-Affichage-Trt until listeCompteClients-EOF = 1.
+           perform gestionClients-Affichage-Fin.
+
+       gestionClients-Affichage-Init.
+           MOVE 0 to listeCompteClients-EOF.
            exec sql
              DECLARE curRechercheNom CURSOR FOR
                SELECT [CodeClient]
@@ -521,22 +527,29 @@
            exec sql
              OPEN curRechercheNom
            end-exec.
+
+       gestionClients-Affichage-Trt.
            exec sql
                fetch curRechercheNom into :Client
            end-exec.
+      
+      * Le cas où aucun client trouvé renvoie à nouveau vers la saisie
+           if SQLCODE = 0 or SQLCODE = 1 then
+               PERFORM gestionClients-Affichage-Ligne
+           else
+               MOVE 1 TO listeCompteClients-EOF
+           end-if.
+
+       gestionClients-Affichage-Fin.
       * ATTENTION : sans fermeture du curseur, l'admin sys. va te découper !
            exec sql
                CLOSE curRechercheNom
            end-exec.
-      * Le cas où aucun client trouvé renvoie à nouveau vers la saisie
-           if SQLCODE = 0 or SQLCODE = 1 then
-               PERFORM gestionClients-Affichage
-           end-if.
 
       *****************************************************************
       * Affichage de l'écran d'un client donné avec choix d'une option
       *****************************************************************
-       gestionClients-Affichage.
+       gestionClients-Affichage-Ligne.
            DISPLAY nomPrenom of Client line 9 col 1 size 80.
 
        end program GestionBanque.
