@@ -81,7 +81,6 @@
        77 div pic 9(15).
       * Variables GestClient
        77 NomClient PIC X(50) VALUE ALL SPACE.
-      *77 NomClientVide PIC X(50) VALUE ALL SPACE.
 
        77 ListeRubErrone-Status PIC 99.
        
@@ -137,12 +136,47 @@
            10 line 1 col 1 value "Page [S]uivante - Retour au [M]enu : " background-color is 0 foreground-color is 7.
            10 line 5 col 1 pic x(80) value all space background-color is 0 foreground-color is 8.
            10 line 5 col 1 value "Code Banque | Code Guichet | Code Compte | Cle RIB | Status" background-color is 0 foreground-color is 8.
-        01 SLigneRIB.
+       01 SLigneRIB.
            10 line noLigneCompte col 1 from codeBanque of CompteCalc size 18.
            10 line noLigneCompte col 20 from codeGuichet of CompteCalc size 18.
            10 line noLigneCompte col 40 from codeCompte of CompteCalc size 5.
            10 line noLigneCompte col 47 from cleRIB of CompteCalc size 9.
            10 line noLigneCompte col 55 from statut of CompteCalc size 9.
+       01 SGestClient.
+           10 blank screen.
+           10 line 3 col 30 value "GESTION DES CLIENTS".
+      * Info client
+           10 line 5 col 2 value  "Nom ........... : ".
+           10 line 5 col 45 value "Prenom ... : ".
+           10 line 6 col 2 value  "Code postal ... : ".
+           10 line 6 col 45 value "Ville .... : ".
+      * Entête des colonnes
+           10 line 8 col 1  PIC X(80) VALUE ALL SPACE background-color is CouleurCaractere.
+           10 line 8 col 1  VALUE "No"
+               foreground-color is CouleurFond
+               background-color is CouleurCaractere.
+           10 line 8 col 4  VALUE "Banque"
+               foreground-color is CouleurFond
+               background-color is CouleurCaractere.
+           10 line 8 col 35 VALUE "Guichet"
+               foreground-color is CouleurFond
+               background-color is CouleurCaractere.
+           10 line 8 col 44 VALUE "Compte"
+               foreground-color is CouleurFond
+               background-color is CouleurCaractere.
+           10 line 8 col 52 VALUE "Type"
+               foreground-color is CouleurFond
+               background-color is CouleurCaractere.
+           10 line 8 col 57 VALUE "Cle"
+               foreground-color is CouleurFond
+               background-color is CouleurCaractere.
+           10 line 8 col 62 VALUE "Debit"
+               foreground-color is CouleurFond
+               background-color is CouleurCaractere.
+           10 line 8 col 71 VALUE "Credit"
+               foreground-color is CouleurFond
+               background-color is CouleurCaractere.
+
     
        procedure division.
        principal section.
@@ -448,6 +482,7 @@
       * Création client, consultation, modification compte, suppression compte
        gestionClients.
            perform gestionClients-ini.
+               DISPLAY SGestClient.
                MOVE '0' TO NomClient.
            perform gestionClients-trt until NomClient = SPACE.
            perform gestionClients-fin.
@@ -457,7 +492,7 @@
        gestionClients-trt.
       * Toujours préserver NomClient    
            MOVE SPACE to NomClient.
-           ACCEPT NomClient.
+           ACCEPT NomClient line 5 col 20 SIZE 24.
 
        gestionClients-fin.
 
