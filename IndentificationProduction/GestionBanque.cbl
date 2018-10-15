@@ -40,6 +40,8 @@
            10 prenom sql char-varying(50).
            10 nom sql char-varying(50).
            10 nomPrenom sql char-varying(50).
+           10 codePostal sql char-varying(20).
+           10 Ville sql char-varying(50).
        01 Compte.
            10 codeBanque sql char(5).
            10 codeGuichet sql char(5).
@@ -186,7 +188,7 @@
            perform menu-fin.
            
        menu-init.
-           move "Trusted_Connection=yes;Database=Cigales;server=SRF-EN2-03\SQLEXPRESS;factory=System.Data.SqlClient;" to CNXDB.
+           move "Trusted_Connection=yes;Database=Cigales;server=SRF-EN2-07\SQLEXPRESS;factory=System.Data.SqlClient;" to CNXDB.
            exec sql
                Connect using :CNXDB
            end-exec.
@@ -488,13 +490,54 @@
            perform gestionClients-fin.
 
        gestionClients-ini.
+           continue.
 
        gestionClients-trt.
       * Toujours préserver NomClient    
            MOVE SPACE to NomClient.
            ACCEPT NomClient line 5 col 20 SIZE 24.
+           IF NomClient <> space then
+               PERFORM gestionClients-rechercheNom
+           END-IF.
 
        gestionClients-fin.
+           continue.
+
+       gestionClients-rechercheNom.
+      * recherche dans la base d'une correspondance => retour de 0 ou 1 si
+      * succès. On affiche alors les données sur l'entête de l'écran
+           exec sql
+             DECLARE curRechercheNom CURSOR FOR
+               SELECT [CodeClient]
+                   ,[Intitule]
+                   ,[Prenom]
+                   ,[Nom]
+                   ,[PrenomNom]
+                   ,[CodePostal]
+                   ,[Ville]
+               FROM [CLIENT]
+               WHERE [Nom] = :NomClient
+           end-exec.
+           exec sql
+             OPEN curRechercheNom
+           end-exec.
+           exec sql
+               fetch curRechercheNom into :Client
+           end-exec.
+      * ATTENTION : sans fermeture du curseur, l'admin sys. va te découper !
+           exec sql
+               CLOSE curRechercheNom
+           end-exec.
+      * Le cas où aucun client trouvé renvoie à nouveau vers la saisie
+           if SQLCODE = 0 or SQLCODE = 1 then
+               PERFORM gestionClients-Affichage
+           end-if.
+
+      *****************************************************************
+      * Affichage de l'écran d'un client donné avec choix d'une option
+      *****************************************************************
+       gestionClients-Affichage.
+           DISPLAY nomPrenom of Client line 9 col 1 size 80.
 
        end program GestionBanque.
-       
+      
