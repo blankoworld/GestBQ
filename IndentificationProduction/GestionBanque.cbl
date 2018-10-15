@@ -9,10 +9,10 @@
        input-output section.
        file-control.
        select FichierClient
-          assign to "C:\Users\Stagaire\Documents\Clé USB Stagiaire\Client.csv"
+          assign to "C:\Users\Olivier\Documents\Clé USB Stagiaire\Client.csv"
           organization is line sequential access sequential.
        select FichierRIB
-          assign to "C:\Users\Stagaire\Documents\Clé USB Stagiaire\RIB.txt"
+          assign to "C:\Users\Olivier\Documents\Clé USB Stagiaire\RIB.txt"
           organization is line sequential
           file status is ListeRubErrone-Status.
 
