@@ -182,6 +182,11 @@
       * Affichage d'un "trait" aux deux tiers de l'écran environ
            10 line 20 col 1 PIC X(80) VALUE ALL "_".
 
+      * Phrase pour quitter la consultation des comptes d'un client
+       01 SgestionClientOption.
+           10 line 1 col 1 value "Voulez-vous [C]onsulter, [m]odifier ou [s]upprimer ce client :"
+               background-color is CouleurCaractere foreground-color is CouleurFond.
+
        procedure division.
        principal section.
        main-menu.
@@ -486,16 +491,15 @@
       * Création client, consultation, modification compte, suppression compte
        gestionClients.
            perform gestionClients-ini.
-               DISPLAY SGestClient.
-               MOVE '0' TO NomClient.
            perform gestionClients-trt until NomClient = SPACE.
            perform gestionClients-fin.
 
        gestionClients-ini.
-           continue.
+           DISPLAY SGestClient.
+           MOVE '0' TO NomClient.
 
        gestionClients-trt.
-      * Toujours préserver NomClient    
+      * Toujours préserver NomClient
            MOVE SPACE to NomClient.
            ACCEPT NomClient line 5 col 20 SIZE 24.
            IF NomClient <> space then
@@ -550,7 +554,20 @@
       * Affichage de l'écran d'un client donné avec choix d'une option
       *****************************************************************
        gestionClients-Affichage-Ligne.
-           DISPLAY nomPrenom of Client line 9 col 1 size 80.
+           PERFORM gestionClients-Ligne-Init.
+           PERFORM gestionClients-Ligne-Trt until choix = 'C'.
+           PERFORM gestionClients-Ligne-Fin.
+
+       gestionClients-Ligne-Init.
+           MOVE 'A' TO choix.
+
+       gestionClients-Ligne-Trt.
+           MOVE 'C' TO choix.
+           DISPLAY SgestionClientOption.
+           ACCEPT choix line 1 col 64.
+
+       gestionClients-Ligne-Fin.
+           DISPLAY SGestClient.
 
        end program GestionBanque.
       
