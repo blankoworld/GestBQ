@@ -190,7 +190,7 @@
            perform menu-fin.
            
        menu-init.
-           move "Trusted_Connection=yes;Database=Cigales;server=SRF-EN2-07\SQLEXPRESS;factory=System.Data.SqlClient;" to CNXDB.
+           move "Trusted_Connection=yes;Database=Cigales;server=CRABEPOURATE\SQLEXPRESS;factory=System.Data.SqlClient;" to CNXDB.
            exec sql
                Connect using :CNXDB
            end-exec.
@@ -515,12 +515,12 @@
            exec sql
              DECLARE curRechercheNom CURSOR FOR
                SELECT [CodeClient]
-                   ,[Intitule]
-                   ,[Prenom]
-                   ,[Nom]
-                   ,[PrenomNom]
+                   ,[intitule]
+                   ,[prenom]
+                   ,[nom]
+                   ,[nomPrenom]
                    ,[CodePostal]
-                   ,[Ville]
+                   ,[ville]
                FROM [CLIENT]
                WHERE [Nom] = :NomClient
            end-exec.
