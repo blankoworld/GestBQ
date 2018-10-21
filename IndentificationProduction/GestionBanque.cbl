@@ -86,6 +86,7 @@
        77 NomClient PIC X(50) VALUE ALL SPACE.
        77 affichageClient-Fin PIC 9 VALUE 0.
        77 listeComptesClient-EOF PIC 9 VALUE 0.
+       77 editionClient-EOF PIC 9 VALUE 0.
 
        77 ListeRubErrone-Status PIC 99.
        
@@ -198,6 +199,15 @@
        01 SgestionClientOption.
            10 line 1 col 1 value "Voulez-vous [C]onsulter, [m]odifier ou [s]upprimer ce client :"
                background-color is CouleurCaractere foreground-color is CouleurFond.
+
+       01 SGestClientEdition.
+           10 line 21 col 1  value "-1-Ajout d'un compte .............:".
+           10 line 21 col 37 value "-4-Modification de l'entete :".
+           10 line 22 col 1  value "-2-Modification compte ligne No   :".
+           10 line 22 col 37 value "-A-Annulation ............. :".
+           10 line 23 col 1  value "-3-Suppression compte ligne No   .:".
+           10 line 23 col 37 value "-V-Validation ............. :".
+           10 line 23 col 68 value "Option :".
 
        procedure division.
        principal section.
@@ -649,7 +659,27 @@
       * Edition d'un client
       **********************
        gestionClients-Edition.
-           DISPLAY "plouf" line 2 col 1.
+           perform gestionClients-Edition-Init.
+           perform gestionClients-Edition-Trt until editionClient-EOF = 1.
+           perform gestionClients-Edition-Fin.
+
+       gestionClients-Edition-Init.
+           MOVE 0 to editionClient-EOF.
+           MOVE SPACE to choix.
+
+       gestionClients-Edition-Trt.
+           display SGestClientEdition.
+           accept choix line 23 col 77.
+           evaluate choix
+               when 1 continue
+               when 2 continue
+               when 3 continue
+               when 4 continue
+               when 'A' MOVE 1 to editionClient-EOF
+               when 'V' continue
+           end-evaluate.
+
+       gestionClients-Edition-Fin.
            continue.
 
        gestionClients-suppression.
