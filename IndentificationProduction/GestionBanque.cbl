@@ -626,8 +626,34 @@
            end-exec.
 
        gestionClients-Action.
+           perform gestionClients-Action-Init.
+           perform gestionClients-Action-Trt until choix = 'C'.
+           perform gestionClients-Action-Fin.
+
+       gestionClients-Action-Init.
+           MOVE 'A' to choix.
+
+       gestionClients-Action-Trt.
+           MOVE 'C' to choix.
            display SgestionClientOption.
            accept choix line 1 col 64.
+           EVALUATE choix
+               WHEN 'm' perform gestionClients-Edition
+               WHEN 's' perform gestionClients-suppression
+           END-EVALUATE.
+
+       gestionClients-Action-Fin.
+           continue.
+       
+      **********************
+      * Edition d'un client
+      **********************
+       gestionClients-Edition.
+           DISPLAY "plouf" line 2 col 1.
+           continue.
+
+       gestionClients-suppression.
+           DISPLAY "suppr" line 2 col 1.
            continue.
 
        end program GestionBanque.
