@@ -200,6 +200,9 @@
            10 line 1 col 1 value "Voulez-vous [C]onsulter, [m]odifier ou [s]upprimer ce client :"
                background-color is CouleurCaractere foreground-color is CouleurFond.
 
+       01 SgestionClientOptionClear foreground-color is CouleurCaractere background-color is CouleurFond.
+           10 line 1 col 1 PIC X(80) VALUE ALL SPACE.
+
        01 SGestClientEdition.
            10 line 21 col 1  value "-1-Ajout d'un compte .............:".
            10 line 21 col 37 value "-4-Modification de l'entete :".
@@ -666,11 +669,14 @@
        gestionClients-Edition-Init.
            MOVE 0 to editionClient-EOF.
            MOVE SPACE to choix.
+      * Première ligne suppr. pour éviter confusion avec écran préc.
+           DISPLAY SgestionClientOptionClear.
 
        gestionClients-Edition-Trt.
            display SGestClientEdition.
            accept choix line 23 col 77.
            evaluate choix
+               when SPACE move 1 to editionClient-EOF
                when 1 continue
                when 2 continue
                when 3 continue
@@ -680,7 +686,8 @@
            end-evaluate.
 
        gestionClients-Edition-Fin.
-           continue.
+      * nettoyage du sous-menu
+           DISPLAY SPACE line 21 col 1 ERASE EOS.
 
        gestionClients-suppression.
            DISPLAY "suppr" line 2 col 1.
