@@ -674,6 +674,7 @@
 
        gestionClients-Edition-Trt.
            display SGestClientEdition.
+           MOVE SPACE to choix.
            accept choix line 23 col 77.
            evaluate choix
                when SPACE move 1 to editionClient-EOF
