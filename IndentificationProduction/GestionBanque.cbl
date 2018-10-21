@@ -627,7 +627,7 @@
 
        gestionClients-Action.
            perform gestionClients-Action-Init.
-           perform gestionClients-Action-Trt until choix = 'C'.
+           perform gestionClients-Action-Trt until choix = 'C' or choix = 'c'.
            perform gestionClients-Action-Fin.
 
        gestionClients-Action-Init.
