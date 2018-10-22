@@ -88,6 +88,27 @@
        77 listeComptesClient-EOF PIC 9 VALUE 0.
        77 editionClient-EOF PIC 9 VALUE 0.
        77 suppressionClient-EOF PIC 9 VALUE 0.
+       77 finSelectionCpte PIC 9 VALUE 0.
+
+       01 LesComptes occurs 15 times.
+           05 AncienCompte.
+               10 CodeBanque SQL char(5).
+               10 NomBanque SQL char-varying(170).
+               10 CodeGuichet SQL char(5).
+               10 RacineCompte SQL char(5).
+               10 TypeCompte SQL char(5).
+               10 CleRIB SQL char(2).
+               10 Debit PIC 9(12)V99.
+               10 Credit PIC 9(12)V99.
+           05 NouveauCompte.
+               10 CodeBanque SQL char(5).
+               10 NomBanque SQL char-varying(170).
+               10 CodeGuichet SQL char(5).
+               10 RacineCompte SQL char(5).
+               10 TypeCompte SQL char(5).
+               10 CleRIB SQL char(2).
+               10 Debit PIC 9(12)V99.
+               10 Credit PIC 9(12)V99.
 
        77 ListeRubErrone-Status PIC 99.
        
@@ -533,11 +554,58 @@
            MOVE SPACE to NomClient.
            ACCEPT NomClient line 5 col 20 SIZE 24.
            IF NomClient <> space then
-               PERFORM gestionClients-Affichage
-               PERFORM gestionClients-Action
+               perform gestionClients-SelectionCpte
            END-IF.
 
        gestionClients-fin.
+           continue.
+
+       gestionClients-SelectionCpte.
+           perform gestionClients-SelectionCpte-Init.
+           perform gestionClients-SelectionCpte-Trt until finSelectionCpte = 1.
+           perform gestionClients-SelectionCpte-Fin.
+
+       gestionClients-SelectionCpte-Init.
+           move 0 to finSelectionCpte.
+           exec sql
+             DECLARE curSelectionCpte CURSOR FOR
+               SELECT [codeClient]
+               ,[codeBanque]
+               ,[nomBanque]
+               ,[codeGuichet]
+               ,[racineCompte]
+               ,[typeCompte]
+               ,[cleRib]
+               ,[soldeDebiteur]
+               ,[soldeCrediteur]
+               FROM [CIGALES].[dbo].[ListeCompteClient]
+               WHERE codeClient = :Client.codeClient
+               ORDER BY codeBanque, codeGuichet, racineCompte, typeCompte, cleRIB
+           end-exec.
+           exec sql
+             open curSelectionCpte
+           end-exec.
+
+       gestionClients-SelectionCpte-Trt.
+           exec sql
+               FETCH curSelectionCpte into
+                   :Compte.codeClient,
+                   :Banque.codeBanque,
+                   :Banque.nom,
+                   :Compte.codeGuichet,
+                   :Compte.racineCompte,
+                   :Compte.typeCompte,
+                   :Compte.cleRIB,
+                   :Compte.strDebit,
+                   :Compte.strCredit
+           end-exec.
+           IF SQLCODE = 100 or SQLCODE = 101 then
+               MOVE 1 TO finSelectionCpte
+           else
+
+           END-IF.
+
+       gestionClients-SelectionCpte-Fin.
            continue.
 
        gestionClients-Affichage.
