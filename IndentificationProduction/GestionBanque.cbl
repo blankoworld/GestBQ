@@ -4,8 +4,8 @@
 
        environment division.
        configuration section.
-       source-computer. SFR-EN2-03.
-       object-computer. SFR-EN2-03.
+       source-computer. SRF-EN2-03.
+       object-computer. SRF-EN2-07.
        input-output section.
        file-control.
        select FichierClient
@@ -220,7 +220,7 @@
            perform menu-fin.
            
        menu-init.
-           move "Trusted_Connection=yes;Database=Cigales;server=CRABEPOURATE\SQLEXPRESS;factory=System.Data.SqlClient;" to CNXDB.
+           move "Trusted_Connection=yes;Database=Cigales;server=SRF-EN2-07\SQLEXPRESS;factory=System.Data.SqlClient;" to CNXDB.
            exec sql
                Connect using :CNXDB
            end-exec.
