@@ -87,6 +87,7 @@
        77 affichageClient-Fin PIC 9 VALUE 0.
        77 listeComptesClient-EOF PIC 9 VALUE 0.
        77 editionClient-EOF PIC 9 VALUE 0.
+       77 suppressionClient-EOF PIC 9 VALUE 0.
 
        77 ListeRubErrone-Status PIC 99.
        
@@ -200,8 +201,12 @@
            10 line 1 col 1 value "Voulez-vous [C]onsulter, [m]odifier ou [s]upprimer ce client :"
                background-color is CouleurCaractere foreground-color is CouleurFond.
 
-       01 SgestionClientOptionClear foreground-color is CouleurCaractere background-color is CouleurFond.
+       01 SgestionClientLineOneClear foreground-color is CouleurCaractere background-color is CouleurFond.
            10 line 1 col 1 PIC X(80) VALUE ALL SPACE.
+
+       01 SgestionClientSuppression.
+           10 line 1 col 1 value "Etes-vous sur de vouloir supprimer ce client ? [O]ui / [N]on"
+               background-color is 4 foreground-color is CouleurFond.
 
        01 SGestClientEdition.
            10 line 21 col 1  value "-1-Ajout d'un compte .............:".
@@ -670,7 +675,7 @@
            MOVE 0 to editionClient-EOF.
            MOVE SPACE to choix.
       * Première ligne suppr. pour éviter confusion avec écran préc.
-           DISPLAY SgestionClientOptionClear.
+           DISPLAY SgestionClientLineOneClear.
 
        gestionClients-Edition-Trt.
            display SGestClientEdition.
@@ -691,8 +696,35 @@
            DISPLAY SPACE line 21 col 1 ERASE EOS.
 
        gestionClients-suppression.
-           DISPLAY "suppr" line 2 col 1.
-           continue.
+           perform gestionClients-suppression-Init.
+           perform gestionClients-suppression-Trt until suppressionClient-EOF = 1.
+           perform gestionClients-suppression-Fin.
+
+       gestionClients-suppression-Init.
+           MOVE 0 TO suppressionClient-EOF.
+           MOVE 'N' TO choix.
+           DISPLAY SgestionClientLineOneClear.
+
+       gestionClients-suppression-Trt.
+           DISPLAY SgestionClientSuppression.
+           accept choix line 1 col 64.
+           IF choix = 'O' or choix = 'o' then
+               perform suppressionClient
+           END-IF.
+           MOVE 1 to suppressionClient-EOF.
+
+       gestionClients-suppression-Fin.
+           DISPLAY SgestionClientLineOneClear.
+
+       suppressionClient.
+           exec sql
+             DELETE FROM [Compte]
+             WHERE codeClient = :Client.codeClient
+           end-exec
+           exec sql
+               DELETE FROM [Client]
+               WHERE codeClient = :Client.codeClient
+           end-exec
 
        end program GestionBanque.
       
