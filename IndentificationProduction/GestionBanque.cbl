@@ -563,27 +563,45 @@
            exec sql
              OPEN curRechercheNom
            end-exec.
+           MOVE SPACES TO nom of Client.
+           MOVE SPACES TO prenom of Client.
+           MOVE SPACES TO codePostal of Client.
+           MOVE SPACES TO Ville of Client.
 
        gestionClients-Affichage-Trt.
            exec sql
                fetch curRechercheNom into :Client
            end-exec.
+      * Creation du client si pas trouvé
+           IF SQLCODE <> 0 AND SQLCODE <> 1 then
+               perform creationClient
+               MOVE NomClient to nom of Client
+           END-IF.
+
            DISPLAY nom of Client line 5 col 20 size 23.
            DISPLAY prenom of Client line 5 col 57 size 23.
            DISPLAY codePostal of Client line 6 col 20 size 23.
            DISPLAY Ville of Client line 6 col 57 size 23.
-      
-      * Le cas où aucun client trouvé renvoie à nouveau vers la saisie
-           if SQLCODE = 0 or SQLCODE = 1 then
-               PERFORM gestionClients-Affichage-Ligne
-           else
-               MOVE 1 TO affichageClient-Fin
-           end-if.
+           PERFORM gestionClients-Affichage-Ligne.
+           MOVE 1 TO affichageClient-Fin.
 
        gestionClients-Affichage-Fin.
       * ATTENTION : sans fermeture du curseur, l'admin sys. va te découper !
            exec sql
                CLOSE curRechercheNom
+           end-exec.
+
+       creationClient.
+           exec sql
+               SELECT newid() into :Client.codeClient
+           end-exec.
+           exec sql
+               INSERT INTO dbo.Client
+                   (codeClient
+                   ,nom)
+               VALUES
+                   (:Client.codeClient
+                   ,:NomClient)
            end-exec.
 
       *****************************************************************
@@ -720,11 +738,11 @@
            exec sql
              DELETE FROM [Compte]
              WHERE codeClient = :Client.codeClient
-           end-exec
+           end-exec.
            exec sql
                DELETE FROM [Client]
                WHERE codeClient = :Client.codeClient
-           end-exec
+           end-exec.
 
        end program GestionBanque.
       
