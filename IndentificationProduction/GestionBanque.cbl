@@ -89,6 +89,18 @@
        77 editionClient-EOF PIC 9 VALUE 0.
        77 suppressionClient-EOF PIC 9 VALUE 0.
        77 finSelectionCpte PIC 9 VALUE 0.
+       77 IndexCompte PIC 99 VALUE 0.
+       77 MaxCompte PIC 99 VALUE 0.
+
+       01 LeCompte.
+           10 CodeBanque SQL char(5).
+           10 NomBanque SQL char-varying(170).
+           10 CodeGuichet SQL char(5).
+           10 RacineCompte SQL char(5).
+           10 TypeCompte SQL char(5).
+           10 CleRIB SQL char(2).
+           10 Debit PIC 9(12)V99.
+           10 Credit PIC 9(12)V99.
 
        01 LesComptes occurs 15 times.
            05 AncienCompte.
@@ -567,10 +579,10 @@
 
        gestionClients-SelectionCpte-Init.
            move 0 to finSelectionCpte.
+           move 0 to IndexCompte.
            exec sql
              DECLARE curSelectionCpte CURSOR FOR
-               SELECT [codeClient]
-               ,[codeBanque]
+               SELECT [codeBanque]
                ,[nomBanque]
                ,[codeGuichet]
                ,[racineCompte]
@@ -588,25 +600,23 @@
 
        gestionClients-SelectionCpte-Trt.
            exec sql
-               FETCH curSelectionCpte into
-                   :Compte.codeClient,
-                   :Banque.codeBanque,
-                   :Banque.nom,
-                   :Compte.codeGuichet,
-                   :Compte.racineCompte,
-                   :Compte.typeCompte,
-                   :Compte.cleRIB,
-                   :Compte.strDebit,
-                   :Compte.strCredit
+               FETCH curSelectionCpte into :LeCompte
            end-exec.
            IF SQLCODE = 100 or SQLCODE = 101 then
                MOVE 1 TO finSelectionCpte
            else
-
+               ADD 1 to IndexCompte
+               MOVE IndexCompte to MaxCompte
+               MOVE corresponding LeCompte TO AncienCompte of 
+                   LesComptes(IndexCompte)
+               MOVE AncienCompte of LesComptes(IndexCompte) TO
+               NouveauCompte of LesComptes(IndexCompte)
            END-IF.
 
        gestionClients-SelectionCpte-Fin.
-           continue.
+           exec sql
+               close curSelectionCpte
+           end-exec.
 
        gestionClients-Affichage.
            perform gestionClients-Affichage-Init.
