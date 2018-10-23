@@ -91,6 +91,9 @@
        77 finSelectionCpte PIC 9 VALUE 0.
        77 IndexCompte PIC 99 VALUE 0.
        77 MaxCompte PIC 99 VALUE 0.
+       77 GestClient-NoLigneCompte PIC 99 VALUE 0.
+       77 NoLigneEfface PIC 99.
+       77 ChoixGestion PIC X.
 
        01 LeCompte.
            10 CodeBanque SQL char(5).
@@ -99,16 +102,27 @@
            10 RacineCompte SQL char(5).
            10 TypeCompte SQL char(5).
            10 CleRIB SQL char(2).
-           10 Debit PIC 9(12)V99.
-           10 Credit PIC 9(12)V99.
+           10 Debit PIC 9(15)V99.
+           10 Credit PIC 9(15)V99.
+
+      * Structure du compte mémorisé de la sélection du client
+       01 LAncienCompte.
+            10 CodeBanque    SQL CHAR(5).
+            10 NomBanque     sql CHAR-VARYING(50).
+            10 CodeGuichet   SQL CHAR(5).
+            10 RacineCompte  SQL CHAR(9).
+            10 TypeCompte    SQL CHAR(2).
+            10 CleRIB        SQL CHAR(2).
+            10 Debit         PIC 9(12)V99.
+            10 Credit        PIC 9(12)V99.
 
        01 LesComptes occurs 15 times.
            05 AncienCompte.
                10 CodeBanque SQL char(5).
                10 NomBanque SQL char-varying(170).
                10 CodeGuichet SQL char(5).
-               10 RacineCompte SQL char(5).
-               10 TypeCompte SQL char(5).
+               10 RacineCompte SQL char(9).
+               10 TypeCompte SQL char(2).
                10 CleRIB SQL char(2).
                10 Debit PIC 9(12)V99.
                10 Credit PIC 9(12)V99.
@@ -116,8 +130,8 @@
                10 CodeBanque SQL char(5).
                10 NomBanque SQL char-varying(170).
                10 CodeGuichet SQL char(5).
-               10 RacineCompte SQL char(5).
-               10 TypeCompte SQL char(5).
+               10 RacineCompte SQL char(9).
+               10 TypeCompte SQL char(2).
                10 CleRIB SQL char(2).
                10 Debit PIC 9(12)V99.
                10 Credit PIC 9(12)V99.
@@ -218,16 +232,33 @@
                background-color is CouleurCaractere.
       * Affichage d'un "trait" aux deux tiers de l'écran environ
            10 line 20 col 1 PIC X(80) VALUE ALL "_".
+      * Affichage des données du client (entête)
+       01 M-Donnees-Client.
+           10 line 5 col 20 from nom of Client pic X(25).
+           10 line 5 col 58 from prenom of Client pic X(20).
+           10 line 6 col 20 from codePostal of Client pic X(25).
+           10 line 6 col 58 from Ville of Client pic X(20).
        01 SLigneClient.
-           10 line noLigneClient col 1  from NbLigne size 2.
-           10 line noLigneClient col 4  from codeBanque   of Banque size 5.
-           10 line noLigneClient col 10 from nom          of Banque size 26.
-           10 line noLigneClient col 36 from codeGuichet  of Compte size 5.
-           10 line noLigneClient col 43 from racineCompte of Compte size 9.
-           10 line noLigneClient col 53 from typeCompte   of Compte size 2.
-           10 line noLigneClient col 57 from cleRIB       of Compte size 2.
-           10 line noLigneClient col 60 from strDebit     of Compte size 8.
-           10 line noLigneClient col 69 from strCredit    of Compte size 8.
+           10 line GestClient-NoLigneCompte col 1  pic 99 from IndexCompte.
+           10 line GestClient-NoLigneCompte col 4 from CodeBanque
+               of NouveauCompte of LesComptes(IndexCompte).
+           10 line GestClient-NoLigneCompte col 10 from NomBanque
+               of NouveauCompte of LesComptes(IndexCompte) PIC X(26).
+           10 line GestClient-NoLigneCompte col 36 from CodeGuichet
+               of NouveauCompte of LesComptes(IndexCompte).
+           10 line GestClient-NoLigneCompte col 43 from RacineCompte
+               of NouveauCompte of LesComptes(IndexCompte).
+           10 line GestClient-NoLigneCompte col 53 from TypeCompte
+               of NouveauCompte of LesComptes(IndexCompte).
+           10 line GestClient-NoLigneCompte col 57 from CleRIB
+               of NouveauCompte of LesComptes(IndexCompte).
+           10 line GestClient-NoLigneCompte col 60 from Debit
+               of NouveauCompte of LesComptes(IndexCompte) PIC Z(5)9V,99.
+           10 line GestClient-NoLigneCompte col 69 from Credit
+               of NouveauCompte of LesComptes(IndexCompte) PIC Z(5)9V,99.
+
+       01 M-QuestionCreation.
+           10 line 1 col 1 value "Voulez-vous creer le client [O]ui/[N]on ?".
 
       * Phrase pour quitter la consultation des comptes d'un client
        01 SgestionClientOption.
@@ -553,21 +584,18 @@
       **********************************
       * Création client, consultation, modification compte, suppression compte
        gestionClients.
-           perform gestionClients-ini.
+           perform gestionClients-init.
            perform gestionClients-trt until NomClient = SPACE.
            perform gestionClients-fin.
 
-       gestionClients-ini.
+       gestionClients-init.
            MOVE '0' TO NomClient.
 
        gestionClients-trt.
-           DISPLAY SGestClient.
-      * Toujours préserver NomClient
            MOVE SPACE to NomClient.
+           DISPLAY SGestClient.
            ACCEPT NomClient line 5 col 20 SIZE 24.
-           IF NomClient <> space then
-               perform gestionClients-SelectionCpte
-           END-IF.
+           IF NomClient <> space then perform gestionClients-SelectionCpte.
 
        gestionClients-fin.
            continue.
@@ -578,8 +606,7 @@
            perform gestionClients-SelectionCpte-Fin.
 
        gestionClients-SelectionCpte-Init.
-           move 0 to finSelectionCpte.
-           move 0 to IndexCompte.
+           MOVE 0 to finSelectionCpte.
            exec sql
              DECLARE curSelectionCpte CURSOR FOR
                SELECT [codeBanque]
@@ -590,237 +617,104 @@
                ,[cleRib]
                ,[soldeDebiteur]
                ,[soldeCrediteur]
-               FROM [CIGALES].[dbo].[ListeCompteClient]
-               WHERE codeClient = :Client.codeClient
-               ORDER BY codeBanque, codeGuichet, racineCompte, typeCompte, cleRIB
+               ,[nom]
+               ,[prenom]
+               ,[codePostal]
+               ,[Ville]
+               FROM [CIGALES].[dbo].[listeCompte]
+               WHERE nom = :NomClient
+               ORDER BY codeBanque, codeGuichet, racineCompte, typeCompte
            end-exec.
            exec sql
              open curSelectionCpte
            end-exec.
+      * Indice de gestion du tableau des comptes et de la ligne
+      * d'affichage     
+           MOVE 0 to IndexCompte.
+           MOVE 0 to MaxCompte.
+           MOVE 8 to GestClient-NoLigneCompte.
+           MOVE 0 to NoLigneEfface.
 
        gestionClients-SelectionCpte-Trt.
            exec sql
-               FETCH curSelectionCpte into :LeCompte
+               FETCH curSelectionCpte into
+               :LeCompte.codeBanque
+               ,:LeCompte.nomBanque
+               ,:LeCompte.codeGuichet
+               ,:LeCompte.racineCompte
+               ,:LeCompte.typeCompte
+               ,:LeCompte.cleRib
+               ,:LeCompte.debit
+               ,:LeCompte.credit
+               ,:Client.nom
+               ,:Client.prenom
+               ,:Client.codePostal
+               ,:Client.Ville
            end-exec.
-           IF SQLCODE = 100 or SQLCODE = 101 then
-               MOVE 1 TO finSelectionCpte
+           if sqlcode = 0 or sqlcode = 1
+               perform gestionClients-Affichage
            else
-               ADD 1 to IndexCompte
-               MOVE IndexCompte to MaxCompte
-               MOVE corresponding LeCompte TO AncienCompte of 
-                   LesComptes(IndexCompte)
-               MOVE AncienCompte of LesComptes(IndexCompte) TO
-               NouveauCompte of LesComptes(IndexCompte)
-           END-IF.
+                move 1 to finSelectionCpte
+           end-if.
+
+       gestionClients-Affichage.
+           add 1 to IndexCompte.
+           move IndexCompte to MaxCompte.
+           move corresponding LeCompte to AncienCompte of LesComptes(IndexCompte).
+           move AncienCompte of LesComptes(IndexCompte) to NouveauCompte of LesComptes(IndexCompte).
+           move LeCompte to LAncienCompte.
+
+      * Affichage des données du client (dans l'entête)     
+           if IndexCompte = 1 display M-Donnees-Client.
+
+      * Incrémentation du numéro de ligne
+           ADD 1 to GestClient-NoLigneCompte.
+           DISPLAY SLigneClient.
 
        gestionClients-SelectionCpte-Fin.
            exec sql
                close curSelectionCpte
            end-exec.
 
-       gestionClients-Affichage.
-           perform gestionClients-Affichage-Init.
-           perform gestionClients-Affichage-Trt until affichageClient-Fin = 1.
-           perform gestionClients-Affichage-Fin.
-
-       gestionClients-Affichage-Init.
-           MOVE 0 to affichageClient-Fin.
-           DISPLAY SGestClient.
-           exec sql
-             DECLARE curRechercheNom CURSOR FOR
-               SELECT [CodeClient]
-                   ,[intitule]
-                   ,[prenom]
-                   ,[nom]
-                   ,[nomPrenom]
-                   ,[CodePostal]
-                   ,[ville]
-               FROM [CLIENT]
-               WHERE [Nom] = :NomClient
-           end-exec.
-           exec sql
-             OPEN curRechercheNom
-           end-exec.
-           MOVE SPACES TO nom of Client.
-           MOVE SPACES TO prenom of Client.
-           MOVE SPACES TO codePostal of Client.
-           MOVE SPACES TO Ville of Client.
-
-       gestionClients-Affichage-Trt.
-           exec sql
-               fetch curRechercheNom into :Client
-           end-exec.
-      * Creation du client si pas trouvé
-           IF SQLCODE <> 0 AND SQLCODE <> 1 then
-               perform creationClient
-               MOVE NomClient to nom of Client
-           END-IF.
-
-           DISPLAY nom of Client line 5 col 20 size 23.
-           DISPLAY prenom of Client line 5 col 57 size 23.
-           DISPLAY codePostal of Client line 6 col 20 size 23.
-           DISPLAY Ville of Client line 6 col 57 size 23.
-           PERFORM gestionClients-Affichage-Ligne.
-           MOVE 1 TO affichageClient-Fin.
-
-       gestionClients-Affichage-Fin.
-      * ATTENTION : sans fermeture du curseur, l'admin sys. va te découper !
-           exec sql
-               CLOSE curRechercheNom
-           end-exec.
-
-       creationClient.
-           exec sql
-               SELECT newid() into :Client.codeClient
-           end-exec.
-           exec sql
-               INSERT INTO dbo.Client
-                   (codeClient
-                   ,nom)
-               VALUES
-                   (:Client.codeClient
-                   ,:NomClient)
-           end-exec.
-
-      *****************************************************************
-      * Affichage de l'écran d'un client donné avec choix d'une option
-      *****************************************************************
-       gestionClients-Affichage-Ligne.
-           PERFORM gestionClients-Ligne-Init.
-           PERFORM gestionClients-Ligne-Trt until listeComptesClient-EOF = 1.
-           PERFORM gestionClients-Ligne-Fin.
-
-       gestionClients-Ligne-Init.
-           MOVE 0 TO listeComptesClient-EOF.
-           MOVE 0 TO NbLigne.
-           MOVE 8 TO noLigneClient.
-           exec sql
-             DECLARE curGestClients CURSOR FOR
-               SELECT [codeClient]
-               ,[codeBanque]
-               ,[nomBanque]
-               ,[codeGuichet]
-               ,[racineCompte]
-               ,[typeCompte]
-               ,[cleRib]
-               ,[soldeDebiteur]
-               ,[soldeCrediteur]
-               FROM [CIGALES].[dbo].[ListeCompteClient]
-               WHERE codeClient = :Client.codeClient
-               ORDER BY codeBanque, codeGuichet, racineCompte, typeCompte, cleRIB
-           end-exec.
-           exec sql
-               OPEN curGestClients
-           end-exec.
-
-       gestionClients-Ligne-Trt.
-           exec sql
-             FETCH curGestclients into
-               :Compte.codeClient,
-               :Banque.codeBanque,
-               :Banque.nom,
-               :Compte.codeGuichet,
-               :Compte.racineCompte,
-               :Compte.typeCompte,
-               :Compte.cleRIB,
-               :Compte.strDebit,
-               :Compte.strCredit
-           end-exec.
-           if SQLCODE = 100 or SQLCODE = 101 then
-               move 1 to listeComptesClient-EOF
+           if MaxCompte = 0 then
+               display M-QuestionCreation
+               move "N" to ChoixGestion
+               accept ChoixGestion line 1 col 43
+               if ChoixGestion = "o" then
+                   move "O" to ChoixGestion
+               end-if
            else
-               ADD 1 TO NbLigne
-               ADD 1 TO noLigneClient
-               DISPLAY SligneClient
+               display SgestionClientOption
+               move "C" to ChoixGestion
+               accept ChoixGestion line 1 col 65
+               if ChoixGestion = "m" then
+                   move "M" to ChoixGestion
+               end-if
+               if ChoixGestion = "s" then
+                   move "S" to ChoixGestion
+               end-if
            end-if.
 
-       gestionClients-Ligne-Fin.
-           exec sql
-             close curGestClients
-           end-exec.
-
-       gestionClients-Action.
-           perform gestionClients-Action-Init.
-           perform gestionClients-Action-Trt until choix = 'C' or choix = 'c'.
-           perform gestionClients-Action-Fin.
-
-       gestionClients-Action-Init.
-           MOVE 'A' to choix.
-
-       gestionClients-Action-Trt.
-           MOVE 'C' to choix.
-           display SgestionClientOption.
-           accept choix line 1 col 64.
-           EVALUATE choix
-               WHEN 'm' perform gestionClients-Edition
-               WHEN 's' perform gestionClients-suppression
-           END-EVALUATE.
-
-       gestionClients-Action-Fin.
-           continue.
-       
-      **********************
-      * Edition d'un client
-      **********************
-       gestionClients-Edition.
-           perform gestionClients-Edition-Init.
-           perform gestionClients-Edition-Trt until editionClient-EOF = 1.
-           perform gestionClients-Edition-Fin.
-
-       gestionClients-Edition-Init.
-           MOVE 0 to editionClient-EOF.
-           MOVE SPACE to choix.
-      * Première ligne suppr. pour éviter confusion avec écran préc.
-           DISPLAY SgestionClientLineOneClear.
-
-       gestionClients-Edition-Trt.
-           display SGestClientEdition.
-           MOVE SPACE to choix.
-           accept choix line 23 col 77.
-           evaluate choix
-               when SPACE move 1 to editionClient-EOF
-               when 1 continue
-               when 2 continue
-               when 3 continue
-               when 4 continue
-               when 'A' MOVE 1 to editionClient-EOF
-               when 'V' continue
+      * On efface la question  
+           move 1 to NoLigneEfface.
+           display SgestionClientLineOneClear.
+      * Traitement en fonction du choix de l'utilisateur ets i l'option
+      * est effectivement affichée
+           evaluate ChoixGestion
+               when "O"
+                   move NomClient to nom of Client
+                   display M-Donnees-Client
+                   if MaxCompte = 0 then perform MajClient
+               when "M"
+                   if MaxCompte > 0 perform MajClient
+               when "S"
+                   if MaxCompte > 0 perform SuppressionClient
            end-evaluate.
 
-       gestionClients-Edition-Fin.
-      * nettoyage du sous-menu
-           DISPLAY SPACE line 21 col 1 ERASE EOS.
+       MajClient.
+           continue.
 
-       gestionClients-suppression.
-           perform gestionClients-suppression-Init.
-           perform gestionClients-suppression-Trt until suppressionClient-EOF = 1.
-           perform gestionClients-suppression-Fin.
+       SuppressionClient.
+           continue.
 
-       gestionClients-suppression-Init.
-           MOVE 0 TO suppressionClient-EOF.
-           MOVE 'N' TO choix.
-           DISPLAY SgestionClientLineOneClear.
-
-       gestionClients-suppression-Trt.
-           DISPLAY SgestionClientSuppression.
-           accept choix line 1 col 64.
-           IF choix = 'O' or choix = 'o' then
-               perform suppressionClient
-           END-IF.
-           MOVE 1 to suppressionClient-EOF.
-
-       gestionClients-suppression-Fin.
-           DISPLAY SgestionClientLineOneClear.
-
-       suppressionClient.
-           exec sql
-             DELETE FROM [Compte]
-             WHERE codeClient = :Client.codeClient
-           end-exec.
-           exec sql
-               DELETE FROM [Client]
-               WHERE codeClient = :Client.codeClient
-           end-exec.
-
-       end program GestionBanque.
-      
+       end program GestionBanque. 
