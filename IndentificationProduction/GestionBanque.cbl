@@ -28,8 +28,6 @@
        77 CouleurFond pic 99 value 15.
        77 CouleurCaractere pic 99 value 0.
        77 finFichier pic 9 value 0.
-       77 finTrtBD pic 9 value 0.
-       77 finTrtFichier pic 9 value 0.
        01 DateSysteme.
            10 Annee pic 99.
            10 Mois pic 99.
@@ -71,11 +69,9 @@
        01 EtatControlCleRIBLigneDetail.
            10 yolo pic x.
        77 LigneBanque pic x(78).
-       77 LigneCompte pic x(78).
        77 nbLigneBanque pic 999.
        77 noLigneCompte pic 999.
        77 noLigneRIB pic 999.
-       77 noLigneClient PIC 99.
        77 listeBanque-EOF pic 9 value 0.
        77 listeCompte-EOF pic 9 value 0.
        77 valeurRIB pic 99.
@@ -84,10 +80,6 @@
        77 div pic 9(15).
       * Variables GestClient
        77 NomClient PIC X(50) VALUE ALL SPACE.
-       77 affichageClient-Fin PIC 9 VALUE 0.
-       77 listeComptesClient-EOF PIC 9 VALUE 0.
-       77 editionClient-EOF PIC 9 VALUE 0.
-       77 suppressionClient-EOF PIC 9 VALUE 0.
        77 finSelectionCpte PIC 9 VALUE 0.
        77 IndexCompte PIC 99 VALUE 0.
        77 MaxCompte PIC 99 VALUE 0.
